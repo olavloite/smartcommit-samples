@@ -9,8 +9,8 @@
     <version>2.2.2.RELEASE</version>
     <relativePath />
   </parent>
-  <groupId>com.github.smartcommit</groupId>
-  <artifactId>smartcommit-samples</artifactId>
+  <groupId>com.github.olavloite</groupId>
+  <artifactId>smartcommit-jdbc-samples</artifactId>
   <version>1.0</version>
   <name>Smart Commit JDBC Driver Samples</name>
 
@@ -27,8 +27,8 @@
     </dependency>
     <!-- The SmartCommit JDBC driver -->
     <dependency>
-      <groupId>com.github.smartcommit</groupId>
-      <artifactId>smartcommit</artifactId>
+      <groupId>com.github.olavloite</groupId>
+      <artifactId>smartcommit-jdbc</artifactId>
       <version>1.0</version>
     </dependency>
 
