@@ -58,6 +58,14 @@ public class CustomerService {
     }
   }
 
+  static final class EnsureTransaction implements Work {
+    @Override
+    public void execute(Connection connection) throws SQLException {
+      // Unwrap the SmartCommitConnection class and ensure it will start a transaction.
+      connection.unwrap(SmartCommitConnection.class).ensureTransaction();
+    }
+  }
+
   @Autowired
   private CustomerRepository repository;
 
@@ -215,6 +223,10 @@ public class CustomerService {
     }
   }
 
+  /**
+   * Queries and lists all customers. The method will join the current transaction if there is one,
+   * and remain in autocommit if there is none.
+   */
   @Transactional
   public void queryAllCustomers() {
     // Get the Hibernate session and create a Work that can log whether the underlying database
@@ -223,7 +235,7 @@ public class CustomerService {
     log.info("Expecting autocommit=true for underlying connection");
     session.doWork(new ConnectionLogger(true));
 
-    log.info("Customers with updated total spending:");
+    log.info("Customers:");
     log.info("-------------------------------");
     for (Customer customer : repository.findAll()) {
       log.info(customer.toString());
@@ -232,5 +244,33 @@ public class CustomerService {
 
     log.info("Expecting autocommit=true for underlying connection");
     session.doWork(new ConnectionLogger(true));
+  }
+
+  /**
+   * Queries and lists all customers. The method will join the current transaction if there is one,
+   * and otherwise ensure that the underlying connection will start one if there is none.
+   */
+  @Transactional
+  public void queryAllCustomers_ForceTransaction() {
+    // Get the Hibernate session and create a Work that can log whether the underlying database
+    // connection is in autocommit mode or not.
+    Session session = (Session) entityManager.getDelegate();
+    log.info("Expecting autocommit=true for underlying connection");
+    session.doWork(new ConnectionLogger(true));
+
+    // Now ensure that there will be a transaction.
+    session.doWork(new EnsureTransaction());
+    log.info("Expecting autocommit=false for underlying connection");
+    session.doWork(new ConnectionLogger(false));
+
+    log.info("Customers:");
+    log.info("-------------------------------");
+    for (Customer customer : repository.findAll()) {
+      log.info(customer.toString());
+    }
+    log.info("");
+
+    log.info("Expecting autocommit=false for underlying connection");
+    session.doWork(new ConnectionLogger(false));
   }
 }
